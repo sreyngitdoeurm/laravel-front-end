@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <section class="container" >
+            <div class="form-container">
+                <div class="form-group">
+                    <input type="number" placeholder="author_id" v-model="author_id">
+                </div>
+                <div class="form-group">
+                    <input type="text" placeholder="title" v-model="title">
+                </div>
+                <div class="form-group">
+                    <textarea name="" id="" cols="30" rows="10" placeholder="body" v-model="body"></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="button" @click="createBook" v-if="isTrue">+ Add</button>
+                    <button type="button" @click="updateBook" v-else>Update</button>
+                </div>
+            </div>
+            <div class="card" v-for="book of books">
+                <div class="card-title">
+                    <h1>{{book.title}}</h1>
+                </div>
+                <div class="crd-body">
+                    <p>{{book.body}}</p>
+                </div>
+                <div class="card-footer">
+                    <p>{{book.created_at}}</p>
+                </div>
+               
+                <button type="button" @click="deleteBook(book.id)">delete</button>
+                <button type="button" @click="editBook(book)">edit</button>
+                
+            </div>
+        </section>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<!-- my code -->
+<script>
+    new Vue({
+        el:'#app',
+        data:{
+            books:[],
+            author_id:null,
+            title:'',
+            body: '',
+            isTrue: true,
+            idEdit:null,
+            url: "http://localhost:8000/api/books",
+
+        },
+        methods:{
+            getBooks(){
+                axios.get(this.url).then(response =>{
+                    for(book of response.data.data){
+                        this.books.push(book);
+                    }
+                    
+                });
+            },
+            createBook(){
+                let data={};
+                data.author_id = parseInt(this.auhor_id),
+                data.title = this.title,
+                data.body = this.body,
+                axios.post(this.url,data).then(response =>{
+                    console.log(response.data);
+                });
+                
+            },
+            deleteBook(id){
+                axios.delete(this.url+"/"+id).then(response =>{
+                    this.books=response.data;
+                });
+            },
+            editBook(book){
+                this.isTrue = false;
+                this.auhor_id =book.author_id;
+                this.title = book.title;
+                this.body = book.body;
+                this.idEdit =book.id;
+                
+            },
+            updateBook(){
+                let data={};
+                data.author_id = parseInt(this.author_id),
+                data.title = this.title,
+                data.body = this.body,
+                axios.put(this.url+"/"+this.idEdit,data).then(response =>{
+                    this.books = response.data;
+                }); 
+                this.isTrue =true;
+            }
+        },
+        mounted(){
+            this.getBooks();
+        }
+    })
+</script>
+</html>
